@@ -69,10 +69,10 @@
     <div class="col-12 col-lg-6 d-flex align-items-center">
       <div class="card border border-dark text-dark rounded w-100 p-4">
           <h2 class="text-center mb-4">Agregar nueva categoría</h2>
-          <form id="formCategoria">
+          <form id="formCategoria" method="post">
             <div class="mb-3">
               <label for="inputCategoria" class="form-label">Nombre de la categoría</label>
-              <input type="text" class="form-control" id="inputCategoria" required>
+              <input type="text" class="form-control" id="inputCategoria" name="categoria" required>
             </div>
             <button type="submit" class="btn btn-primary w-100">Agregar</button>
           </form>
@@ -84,57 +84,104 @@
     
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script>
- <script>
-    const form = document.getElementById('formCategoria');
-    const input = document.getElementById('inputCategoria');
-    const lista = document.getElementById('listaCategorias');
+<script>
+  const form = document.getElementById('formCategoria');
+  const input = document.getElementById('inputCategoria');
+  const lista = document.getElementById('listaCategorias');
 
-    let categorias = [];
+  let categorias = [];
 
-    // guarda los datos Cargados desde localStorage 
-    window.onload = () => {
-      const data = localStorage.getItem('categorias');
-      if (data) {
-        categorias = JSON.parse(data);
-        categorias.forEach(cat => agregarCategoria(cat));
-      }
+  window.onload = () => {
+    const data = localStorage.getItem('categorias');
+    if (data) {
+      categorias = JSON.parse(data);
+      categorias.forEach(cat => renderCategoria(cat));
+    }
+  };
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const nombre = input.value.trim();
+    if (nombre !== "") {
+      const nueva = { nombre, subcategorias: [] };
+      categorias.push(nueva);
+      guardarCategorias();
+      renderCategoria(nueva);
+      input.value = "";
+    }
+  });
+
+  function renderCategoria(categoria) {
+    const li = document.createElement('li');
+    li.className = 'list-group-item';
+
+    const header = document.createElement('div');
+    header.className = 'd-flex justify-content-between align-items-center';
+    header.innerHTML = `<strong>${categoria.nombre}</strong>`;
+
+    const btnEliminar = document.createElement('button');
+    btnEliminar.className = 'btn btn-sm btn-danger ms-2';
+    btnEliminar.textContent = 'Eliminar';
+    btnEliminar.onclick = () => {
+      categorias = categorias.filter(c => c.nombre !== categoria.nombre);
+      guardarCategorias();
+      li.remove();
     };
 
-    form.addEventListener('submit', function(e) {
+    const formSub = document.createElement('form');
+    formSub.className = 'd-flex mt-2';
+    formSub.innerHTML = `
+      <input type="text" class="form-control form-control-sm me-2" placeholder="Subcategoría" required>
+      <button type="submit" class="btn btn-sm btn-primary">Agregar</button>
+    `;
+
+    const ulSubs = document.createElement('ul');
+    ulSubs.className = 'list-group mt-2';
+
+    formSub.addEventListener('submit', function(e) {
       e.preventDefault();
-      const nombre = input.value.trim();
-      if (nombre !== "") {
-        categorias.push(nombre);
+      const subInput = formSub.querySelector('input');
+      const subNombre = subInput.value.trim();
+      if (subNombre !== '') {
+        categoria.subcategorias.push(subNombre);
         guardarCategorias();
-        agregarCategoria(nombre);
-        input.value = "";
+        renderSubcategoria(ulSubs, categoria, subNombre);
+        subInput.value = '';
       }
     });
 
-    //funcion para agregar y eliminar categorias o subcategorias
-    function agregarCategoria(nombre) {
-      const li = document.createElement('li');
-      li.className = 'list-group-item d-flex justify-content-between align-items-center';
-      li.textContent = nombre;
+    categoria.subcategorias.forEach(sub => renderSubcategoria(ulSubs, categoria, sub));
 
-      const btnEliminar = document.createElement('button');
-      btnEliminar.className = 'btn btn-sm btn-danger';
-      btnEliminar.textContent = 'Eliminar';
-      btnEliminar.onclick = () => {
-        li.remove();
-        categorias = categorias.filter(cat => cat !== nombre);
-        guardarCategorias();
-      };
+    header.appendChild(btnEliminar);
+    li.appendChild(header);
+    li.appendChild(formSub);
+    li.appendChild(ulSubs);
+    lista.appendChild(li);
+  }
 
-      li.appendChild(btnEliminar);
-      lista.appendChild(li);
-    }
+  function renderSubcategoria(ul, categoria, subNombre) {
+    const subLi = document.createElement('li');
+    subLi.className = 'list-group-item d-flex justify-content-between align-items-center';
+    subLi.textContent = subNombre;
 
-    //funcion para guardar categorias
-    function guardarCategorias() {
-      localStorage.setItem('categorias', JSON.stringify(categorias));
-    }
-  </script>
+    const btnEliminar = document.createElement('button');
+    btnEliminar.className = 'btn btn-sm btn-danger';
+    btnEliminar.textContent = 'Eliminar';
+    btnEliminar.onclick = () => {
+      categoria.subcategorias = categoria.subcategorias.filter(s => s !== subNombre);
+      guardarCategorias();
+      subLi.remove();
+    };
+
+    subLi.appendChild(btnEliminar);
+    ul.appendChild(subLi);
+  }
+
+  function guardarCategorias() {
+    localStorage.setItem('categorias', JSON.stringify(categorias));
+  }
+</script>
+
 
 </body>
 </html>

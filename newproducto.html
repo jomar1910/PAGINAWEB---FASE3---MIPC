@@ -16,9 +16,10 @@
          <img src="images/17654.png" class="barras rounded" alt="">
         </button>
         <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="#">Action</a></li>
-            <li><a class="dropdown-item" href="#">Another action</a></li>
-              <li><a class="dropdown-item" href="#">Something else here</a></li>
+            <li><a class="dropdown-item" href="#">Productos</a></li>
+            <li><a class="dropdown-item" href="#">Videojuegos</a></li>
+              <li><a class="dropdown-item" href="#">Componentes</a></li>
+              <li><a class="dropdown-item" href="#">Licencias</a></li>
         </ul>
     </div>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,7 +35,7 @@
         <li class="nav-item">
           <a class="nav-link active mx-3 " aria-current="page" href="#"> 
             <img src="/images/6063673.png" class=" rounded " alt=""> 
-            <h6>cuenta</h6></a>
+            <h6>gestor de usuarios</h6></a>
         </li>
         <li class="nav-item">
           <a class="nav-link active mx-3 " aria-current="page" href="#"> 
@@ -102,6 +103,25 @@
             <label for="stockProducto" class="form-label">Stock</label>
             <input type="number" class="form-control" id="stockProducto" required>
           </div>
+          <div class="mb-3">
+  <label for="categoriaProducto" class="form-label">Categoría</label>
+  <select class="form-select" id="categoriaProducto" required>
+    <option value="">Selecciona una categoría</option>
+    <option value="tecnologia">Tecnología</option>
+    <option value="ropa">Ropa</option>
+    <option value="hogar">Hogar</option>
+  </select>
+</div>
+
+<div class="mb-3">
+  <label for="subcategoriaProducto" class="form-label">Subcategoría</label>
+  <select class="form-select" id="subcategoriaProducto" required>
+    <option value="">Selecciona una subcategoría</option>
+  </select>
+</div>
+
+
+
           <button type="submit" class="btn btn-success w-100">Publicar</button>
         </form>
       </div>
@@ -159,6 +179,7 @@
         <div>
           <strong>${producto.nombre}</strong><br>
           ${producto.descripcion}<br>
+          Categoría/Subcategoría: ${producto.categoria}<br>
           $${producto.precio} - Stock: ${producto.stock}
         </div>
       </div>
@@ -171,6 +192,28 @@
   });
 }
 
+const categorias = {
+    tecnologia: ["Laptops", "Smartphones", "Tablets"],
+    ropa: ["Camisas", "Pantalones", "Zapatos"],
+    hogar: ["Muebles", "Electrodomésticos", "Decoración"]
+  };
+
+  const categoriaSelect = document.getElementById("categoriaProducto");
+  const subcategoriaSelect = document.getElementById("subcategoriaProducto");
+
+  categoriaSelect.addEventListener("change", () => {
+    const seleccionada = categoriaSelect.value;
+    const subcategorias = categorias[seleccionada] || [];
+
+    subcategoriaSelect.innerHTML = '<option value="">Selecciona una subcategoría</option>';
+    subcategorias.forEach(sub => {
+      const option = document.createElement("option");
+      option.value = sub.toLowerCase();
+      option.textContent = sub;
+      subcategoriaSelect.appendChild(option);
+    });
+  });
+
   // Llenar formulario con datos para editar
   window.editarProducto = function (index) {
     const productos = obtenerProductos();
@@ -180,6 +223,7 @@
     document.getElementById("descripcionProducto").value = producto.descripcion;
     document.getElementById("precioProducto").value = producto.precio;
     document.getElementById("stockProducto").value = producto.stock;
+    document.getElementById("categoriaProducto").value = producto.categoria;
     preview.src = producto.imagen;
     preview.classList.remove("d-none");
     imagenBase64 = producto.imagen;
@@ -191,12 +235,14 @@
     e.preventDefault();
 
     const producto = {
-      nombre: document.getElementById("nombreProducto").value.trim(),
-      descripcion: document.getElementById("descripcionProducto").value.trim(),
-      precio: parseFloat(document.getElementById("precioProducto").value),
-      stock: parseInt(document.getElementById("stockProducto").value),
-      imagen: imagenBase64 || ""
-    };
+    nombre: document.getElementById("nombreProducto").value.trim(),
+    descripcion: document.getElementById("descripcionProducto").value.trim(),
+    precio: parseFloat(document.getElementById("precioProducto").value),
+    stock: parseInt(document.getElementById("stockProducto").value),
+    categoria: document.getElementById("categoriaProducto").value.trim(),
+    imagen: imagenBase64 || ""
+};
+
 
     let productos = obtenerProductos();
 
