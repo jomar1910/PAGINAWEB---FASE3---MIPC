@@ -51,47 +51,186 @@
   </div>
 </nav>
 
-<div class="container min-vh-100 d-flex flex-column mt-4">
+<div class="container min-vh-100 d-flex justify-content-center align-items-center">
   <div class="row flex-grow-1 w-100">
-  
-    <div class="col-12 col-lg-4 mb-4 d-flex">
-  <div class="card border border-dark text-dark rounded w-100 p-4 d-flex flex-column justify-content-center centrado">
+
     
-    <h2 class="text-center mb-4">Dashboard</h2>
-    
-    <div class="d-flex justify-content-center mb-4">
-      <div class="card" style="width: 18rem;">
-        <img src="images/The-main-character-from-Minecraft-Steve-runs-with-a-pickaxe-in-his-hands.png" class="card-img-top" alt="Usuario">
-        <div class="card-body">
-          <h5 class="card-title">Usuario:</h5>
-          <p class="card-text">Aquí va el nombre del usuario actual</p>
-          <a href="#" class="btn btn-primary">Go somewhere</a>
+    <div class="col-12 col-lg-6 mb-4 d-flex align-items-center">
+      <div class="card border border-dark text-dark rounded w-100 p-4">
+        <h2 class="text-center mb-4">Agregar Imagen del Producto</h2>
+        <form id="formImagen">
+          <div class="mb-3">
+            <label for="inputImagen" class="form-label">Selecciona una imagen</label>
+            <input type="file" class="form-control" id="inputImagen" accept="image/*" required>
+          </div>
+          <div class="text-center">
+            <img id="previewImagen" src="" alt="Vista previa" class="img-fluid mt-3 d-none border rounded" style="max-height: 200px;">
+          </div>
+        </form>
+
+       
+      <div class="row mt-5 ">
+        <div>
+          <div class="card border border-dark p-3">
+          <h4>Productos registrados:</h4>
+          <ul id="listaProductos" class="list-group"></ul>
         </div>
       </div>
     </div>
-    
-    <div class="text-center">
-      <h3>Reportes</h3>
-      <div class="d-flex flex-column align-items-center gap-3 mt-3">
-        <button type="button" class="btn btn-outline-dark w-75">Inventario</button>
-        <button type="button" class="btn btn-outline-dark w-75">Ventas</button>
+
+
       </div>
     </div>
-    
-  </div>
-</div>
 
-
-    <div class="col-12 col-lg-8 d-flex">
+    <div class="col-12 col-lg-6 d-flex align-items-center">
       <div class="card border border-dark text-dark rounded w-100 p-4">
-        <h2>Contenido Principal</h2>
-        <p>Aquí puedes agregar gráficos, tablas, o cualquier otro contenido del dashboard.</p>
+        <h2 class="text-center mb-4">Datos del Producto</h2>
+        <form id="formProducto">
+          <div class="mb-3">
+            <label for="nombreProducto" class="form-label">Nombre</label>
+            <input type="text" class="form-control" id="nombreProducto" required>
+          </div>
+          <div class="mb-3">
+            <label for="descripcionProducto" class="form-label">Descripción</label>
+            <textarea class="form-control" id="descripcionProducto" rows="2" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="precioProducto" class="form-label">Precio</label>
+            <input type="number" class="form-control" id="precioProducto" required>
+          </div>
+          <div class="mb-3">
+            <label for="stockProducto" class="form-label">Stock</label>
+            <input type="number" class="form-control" id="stockProducto" required>
+          </div>
+          <button type="submit" class="btn btn-success w-100">Publicar</button>
+        </form>
       </div>
     </div>
-    
   </div>
+
 </div>
 
+    
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script>
+<script>
+  const formProducto = document.getElementById("formProducto");
+  const inputImagen = document.getElementById("inputImagen");
+  const preview = document.getElementById("previewImagen");
+  const listaProductos = document.getElementById("listaProductos");
+
+  let imagenBase64 = "";
+  let editIndex = -1;
+
+  // Vista previa de imagen
+  inputImagen.addEventListener("change", function () {
+    const archivo = this.files[0];
+    if (archivo) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        imagenBase64 = e.target.result;
+        preview.src = imagenBase64;
+        preview.classList.remove("d-none");
+      };
+      reader.readAsDataURL(archivo);
+    }
+  });
+
+  // LocalStorage 
+  function obtenerProductos() {
+    const productos = localStorage.getItem("productos");
+    return productos ? JSON.parse(productos) : [];
+  }
+
+  function guardarProductos(productos) {
+    localStorage.setItem("productos", JSON.stringify(productos));
+  }
+
+  // Mostrar productos
+  function mostrarProductos() {
+  listaProductos.innerHTML = "";
+  const productos = obtenerProductos();
+
+  productos.forEach((producto, index) => {
+    const li = document.createElement("li");
+    li.classList.add("list-group-item", "d-flex", "align-items-center", "justify-content-between", "gap-3");
+    li.innerHTML = `
+      <div class="d-flex align-items-center gap-3">
+        <img src="${producto.imagen}" alt="img" style="width: 50px; height: 50px;" class="border rounded">
+        <div>
+          <strong>${producto.nombre}</strong><br>
+          ${producto.descripcion}<br>
+          $${producto.precio} - Stock: ${producto.stock}
+        </div>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-warning btn-sm" onclick="editarProducto(${index})">Editar</button>
+        <button class="btn btn-danger btn-sm" onclick="eliminarProducto(${index})">Eliminar</button>
+      </div>
+    `;
+    listaProductos.appendChild(li);
+  });
+}
+
+  // Llenar formulario con datos para editar
+  window.editarProducto = function (index) {
+    const productos = obtenerProductos();
+    const producto = productos[index];
+
+    document.getElementById("nombreProducto").value = producto.nombre;
+    document.getElementById("descripcionProducto").value = producto.descripcion;
+    document.getElementById("precioProducto").value = producto.precio;
+    document.getElementById("stockProducto").value = producto.stock;
+    preview.src = producto.imagen;
+    preview.classList.remove("d-none");
+    imagenBase64 = producto.imagen;
+    editIndex = index;
+  };
+
+  // Enviar formulario: guardar o actualizar
+  formProducto.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const producto = {
+      nombre: document.getElementById("nombreProducto").value.trim(),
+      descripcion: document.getElementById("descripcionProducto").value.trim(),
+      precio: parseFloat(document.getElementById("precioProducto").value),
+      stock: parseInt(document.getElementById("stockProducto").value),
+      imagen: imagenBase64 || ""
+    };
+
+    let productos = obtenerProductos();
+
+    if (editIndex >= 0) {
+      // Editar producto existente
+      productos[editIndex] = producto;
+      editIndex = -1;
+    } else {
+      // Agregar nuevo producto
+      productos.push(producto);
+    }
+
+    guardarProductos(productos);
+    mostrarProductos();
+    formProducto.reset();
+    preview.classList.add("d-none");
+    preview.src = "";
+    imagenBase64 = "";
+  });
+
+  // Eliminar producto
+window.eliminarProducto = function(index) {
+  let productos = obtenerProductos();
+  if (confirm("¿Estás seguro de que quieres eliminar este producto?")) {
+    productos.splice(index, 1);
+    guardarProductos(productos);
+    mostrarProductos();
+  }
+};
+
+  // Mostrar productos al cargar
+  window.addEventListener("DOMContentLoaded", mostrarProductos);
+</script>
+
+
 </body>
 </html>
